@@ -103,7 +103,11 @@
       <script>scripts\image_save.gml</script>
       <script>scripts\image_save_strip.gml</script>
     </scripts>
+    <script>scripts\scr_load_wad.gml</script>
+    <script>scripts\scr_wad_digest_level.gml</script>
+    <script>scripts\check_bit.gml</script>
   </scripts>
+  <shaders name="shaders"/>
   <fonts name="fonts">
     <font>fonts\font0</font>
   </fonts>
