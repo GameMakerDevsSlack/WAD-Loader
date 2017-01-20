@@ -46,6 +46,10 @@
   <paths name="paths"/>
   <scripts name="scripts">
     <script>scripts\file_bin_read_word.gml</script>
+    <script>scripts\buffer_read_word.gml</script>
+    <script>scripts\file_bin_read_text.gml</script>
+    <script>scripts\buffer_read_text.gml</script>
+    <script>scripts\check_bit.gml</script>
     <script>scripts\draw_list.gml</script>
     <script>scripts\copy_list_text.gml</script>
     <scripts name="image_framework_V2.6">
@@ -105,13 +109,14 @@
     </scripts>
     <script>scripts\scr_load_wad.gml</script>
     <script>scripts\scr_wad_digest_level.gml</script>
-    <script>scripts\check_bit.gml</script>
+    <script>scripts\cout.gml</script>
+    <script>scripts\list.gml</script>
   </scripts>
-  <shaders name="shaders"/>
   <fonts name="fonts">
     <font>fonts\font0</font>
   </fonts>
   <objects name="objects">
+    <object>objects\obj_start</object>
     <object>objects\obj_loader</object>
   </objects>
   <rooms name="rooms">

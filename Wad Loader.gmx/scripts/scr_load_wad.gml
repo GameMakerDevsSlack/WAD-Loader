@@ -4,63 +4,61 @@ enum types {
 }
 
 var fname = argument0;
-wad = file_bin_open(fname, 0);
+wad = buffer_load(fname);
 
-header = "";
-repeat (4)
-{
-    header += chr(file_bin_read_byte(wad));
-}  
-numlumps = file_bin_read_word(wad,4,false);    //DOOM ints are Little Endian
-infoOffset = file_bin_read_word(wad,4,false);
-var size = file_bin_size(wad);
-file_bin_seek(wad,infoOffset);
+header = buffer_read_text(wad,4);
+numlumps = buffer_read_word(wad,4,false);    //DOOM ints are Little Endian
+infoOffset = buffer_read_word(wad,4,false);
+var size = buffer_get_size(wad);
+buffer_seek(wad,buffer_seek_start,infoOffset);
 
 lumps = ds_list_create();
 
 for (var i=0;i<numlumps;i++)
 {
-    lumps[| i*3]   = file_bin_read_word(wad,4,false);       //filepos
-    lumps[| i*3+1] = file_bin_read_word(wad,4,false);       //size
-    lumps[| i*3+2] = "";
-    repeat (8)
-    {
-        lumps[| i*3+2] += chr(file_bin_read_byte(wad));     //name
-    }
+    lumps[| i*3]   = buffer_read_word(wad,4,false);         //filepos
+    lumps[| i*3+1] = buffer_read_word(wad,4,false);         //size
+    lumps[| i*3+2] = buffer_read_text(wad,8);               //name
 }
 mapType = types.UltimateDOOM;               //ExMy format used in UltDOOM  WADs
 if ds_list_find_index(lumps,"MAP01")        //MAPxx format used in DOOM 2  WADs
 {
     mapType = types.DOOM2;
 }
-copy_list_text(lumps);
 //read palettes
 //Palettes - 16x16 - 256 colours each
 var pos = lumps[| ds_list_find_index(lumps,"PLAYPAL")-2];
 numPalettes = ( lumps[| ds_list_find_index(lumps,"PLAYPAL")-1]/(768) );
-file_bin_seek(wad,pos);
+buffer_seek(wad,buffer_seek_start,pos);
 paletteColour[numPalettes-1,255] = 0;
-palettes[numPalettes] = 0;
 for (var i=0;i<numPalettes;i++)
 {
-    palettes[i] = surface_create(16,16);
-    surface_set_target(palettes[i]);
     for (var j=0;j<256;j++)     //256 colours in a palette
     {
-        var r = file_bin_read_byte(wad),
-            g = file_bin_read_byte(wad),
-            b = file_bin_read_byte(wad),
-            c = make_color_rgb(r,g,b),
-            xx= floor(j/16),
-            yy= j mod 16;
+        var r = buffer_read(wad,buffer_u8),
+            g = buffer_read(wad,buffer_u8),
+            b = buffer_read(wad,buffer_u8),
+            c = make_color_rgb(r,g,b);
             
             paletteColour[i,j] = c;
-            draw_set_color(c);
-            draw_point(xx,yy);
     }
-    surface_reset_target();
-    paletteBuffer[i] = buffer_create(1024,buffer_grow,1);
-    buffer_get_surface(paletteBuffer[i],palettes[i],0,0,0);
     show_debug_message("Palette " + string(i) + " completed");
 }
-scr_wad_digest_level(wad,lumps,"E1M1")
+
+var map = scr_wad_digest_level(wad,lumps,"E1M1");
+var vertices = map[| 1];
+var linedefs = map[| 2];
+var divisor = 1;
+vertex_format_begin();
+vertex_format_add_position();
+format = vertex_format_end();
+buffer = vertex_create_buffer();
+vertex_begin(buffer,format);
+for (var i=0;i<ds_list_size(linedefs);i+=7)
+{
+    cout(vertices[| linedefs[| i  ]],vertices[| linedefs[| i+1]]);
+    vertex_position(buffer,vertices[| linedefs[| i  ]]/divisor,vertices[| linedefs[| i  ]]/divisor);
+    vertex_position(buffer,vertices[| linedefs[| i+1]]/divisor,vertices[| linedefs[| i+1]]/divisor);
+}
+copy_list_text(linedefs);
+vertex_end(buffer);
